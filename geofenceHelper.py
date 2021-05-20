@@ -10,7 +10,7 @@ from flask import Blueprint, render_template, request, Markup
 from threading import Thread
 
 import mapadroid.utils.pluginBase
-from mapadroid.madmin.functions import auth_required, generate_coords_from_geofence, get_geofences
+from mapadroid.madmin.functions import auth_required
 from mapadroid.geofence.geofenceHelper import GeofenceHelper
 
 
@@ -38,15 +38,15 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
         # map mode strings to methods
         # https://bytebaker.com/2008/11/03/switch-case-statement-in-python/
         # geoJson and poracle is handled differently because of the merge option
-        self.modes = { "pmsf" : self.pmsf,
-                       "pmsfarray" : self.pmsfarray,
-                       "pokealarm" : self.pokealarm,
-                       "sqlpolygon" : self.sqlpolygon,
-                       "geojson" : self.geojson,
-                       "geojson_merged" : self.geojson_merged,
-                       "poracle" : self.poracle,
-                       "poracle_merged" : self.poracle_merged
-                     }
+        self.modes = {"pmsf": self.pmsf,
+                      "pmsfarray": self.pmsfarray,
+                      "pokealarm": self.pokealarm,
+                      "sqlpolygon": self.sqlpolygon,
+                      "geojson": self.geojson,
+                      "geojson_merged": self.geojson_merged,
+                      "poracle": self.poracle,
+                      "poracle_merged": self.poracle_merged
+                      }
 
         # define geoJson patterns to deepcopy later
         self.geojson_pattern: dict = {}
@@ -135,7 +135,6 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
 
         return update_available
 
-
     def update_checker(self):
         while True:
             self.logger.debug("{} checking for updates ...", self.pluginname)
@@ -150,10 +149,9 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
                 self.logger.warning("Failed checking for updates!")
             time.sleep(3600)
 
-
     # get directly from database
-    #inspiration: https://github.com/Map-A-Droid/MAD/blob/6eea593aa0e77e93e80fb943a6c375b0ca408c0f/mapadroid/madmin/routes/map.py#L86
-    #MADminMap.get_geofences()
+    # inspiration: https://github.com/Map-A-Droid/MAD/blob/6eea593aa0e77e93e80fb943a6c375b0ca408c0f/mapadroid/madmin/routes/map.py#L86
+    # MADminMap.get_geofences()
     def get_all_fences(self):
         self.logger.debug("::get_all_fences")
         fences = {}
@@ -170,10 +168,9 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
                         name = geofenced_area["name"]
                     else:
                         name = f'{geofence["name"]}_{geofenced_area["name"]}'
-                    if not name in fences:
+                    if name not in fences:
                         fences[name] = geofenced_area["polygon"]
         return fences
-
 
     def format_geojson(self, geojson):
         self.logger.debug("::format_geojson")
@@ -189,7 +186,6 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
         else:
             return json.dumps(geojson, indent=4)
 
-
     def build_geojson(self, features=[]):
         self.logger.debug("::build_geojson")
         this_dict = copy.deepcopy(self.geojson_pattern)
@@ -198,7 +194,6 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
             this_dict["features"].append(feature)
         self.logger.debug(f"format and return: {this_dict}")
         return self.format_geojson(this_dict)
-
 
     def feature(self, name="unknown", coords=[]):
         self.logger.debug("::feature")
@@ -211,16 +206,14 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
         this_feature["geometry"]["coordinates"].append(coordset)
         return this_feature
 
-
     def poracle(self):
         self.logger.debug("::poracle")
         result: str = ""
         allfences = self.get_all_fences()
         for name in self.selected_fences:
             coords = allfences[name]
-            result += self.format_geojson([self.poracle_elem(name, coords),])
+            result += self.format_geojson([self.poracle_elem(name, coords), ])
         return result
-
 
     def poracle_merged(self):
         self.logger.debug("::poracle_merged")
@@ -231,7 +224,6 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
             elems.append(self.poracle_elem(name, coords))
         return self.format_geojson(elems)
 
-
     def poracle_elem(self, name="unknown", coords=[]):
         self.logger.debug("::poracle_elem")
         this_dict = {}
@@ -241,16 +233,14 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
             this_dict["path"].append([coord["lat"], coord["lon"]])
         return this_dict
 
-
     def geojson(self):
         self.logger.debug("::geojson")
         result: str = ""
         allfences = self.get_all_fences()
         for name in self.selected_fences:
             coords = allfences[name]
-            result += self.build_geojson([self.feature(name, coords),])
+            result += self.build_geojson([self.feature(name, coords), ])
         return result
-
 
     def geojson_merged(self):
         self.logger.debug("geojson_merged")
@@ -260,7 +250,6 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
             coords = allfences[name]
             features.append(self.feature(name, coords))
         return self.build_geojson(features)
-
 
     def pmsf(self, array=False):
         self.logger.debug("::pmsf")
@@ -272,15 +261,12 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
                 result += f'$fencearr["{name}"] = \''
             else:
                 result += f'${name} = \''
-            first_coord = None
             result += f"{self.create_sqlpolygon(name=name, coords=coords, newline=False)}\';{self.newline}"
         return result
-
 
     def pmsfarray(self, name="unknown", coords=[]):
         self.logger.debug("::pmsfarray")
         return self.pmsf(array=True)
-
 
     def pokealarm(self):
         self.logger.debug("::pokealarm")
@@ -293,7 +279,6 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
                 result += f'{coord["lat"]},{coord["lon"]}{self.newline}'
         return result
 
-
     def sqlpolygon(self):
         self.logger.debug("::sqlpolygon")
         result: str = ""
@@ -302,7 +287,6 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
             coords = allfences[name]
             result += self.create_sqlpolygon(name, coords)
         return result
-
 
     def create_sqlpolygon(self, name="unknown", coords=[], newline=True):
         self.logger.debug("::create_sqlpolygon")
@@ -317,7 +301,6 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
             return f"{result}{self.newline}"
         else:
             return result
-
 
     @auth_required
     def select(self):
@@ -338,7 +321,6 @@ class MadPluginExample(mapadroid.utils.pluginBase.Plugin):
         mode = results.get("mode")
         self.outtype = results.get("type", "script")
         self.newline = "\n" if self.outtype == "script" else "<br />"
-            
 
         output = self.modes[mode]()
         self.logger.debug(f"Built this output: {output}")
