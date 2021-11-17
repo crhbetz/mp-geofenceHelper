@@ -11,10 +11,10 @@
 <h2>Geofences </h2>
 <br />
 
-<form action="/gfhelper_results" method="get">
+<form action="/custom_plugins/geofenceHelper/gfhelper_results" method="get">
 <table><tr><th>Name</th><th>Select</th></tr>
-{% for name in fences %}
-<tr><td>{{name}}</td><td><input type="checkbox" name="{{name}}"></td></tr>
+{% for num in fences %}
+<tr><td>{{fences[num].name}}</td><td><input type="checkbox" name="{{fences[num].name}}"></td></tr>
 {% endfor %}
 </table><br />
 <select name = "mode">
